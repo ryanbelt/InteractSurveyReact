@@ -30,6 +30,7 @@ import Helmet from 'react-helmet';
 import routes from '../shared/routes';
 import { fetchComponentData } from './util/fetchData';
 import posts from './routes/post.routes';
+import Router from './routes';
 import dummyData from './dummyData';
 import serverConfig from './config';
 
@@ -49,6 +50,7 @@ app.use(bodyParser.json({ limit: '20mb' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 app.use(Express.static(path.resolve(__dirname, '../static')));
 app.use('/api', posts);
+app.use('/api', Router);
 
 // Render Initial HTML
 const renderFullPage = (html, initialState) => {
@@ -120,6 +122,8 @@ app.use((req, res, next) => {
       .catch((err) => next(err));
   });
 });
+
+require('./routes/errorHandler')(app);
 
 // start app
 app.listen(serverConfig.port, (error) => {
