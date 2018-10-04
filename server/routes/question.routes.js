@@ -6,8 +6,8 @@
 let QuestionController = require('../controllers/question.controller');
 
 module.exports = function (app, middlewares) {
-  app.get('/questions/:title', (req, res, next) => {
-    return QuestionController.getQuestionByTitle(req.params.title)
+  app.get('/questions/:id', (req, res, next) => {
+    return QuestionController.getQuestionByid(req.params.id)
       .then((question)=>{
         res.json(question)
       })

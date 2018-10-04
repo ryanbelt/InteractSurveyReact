@@ -3,10 +3,10 @@
  */
 import { Question } from '../models';
 
-function getQuestionByTitle(title) {
-  return Question.getQuestionByTitle(title);
+function getQuestionByid(id) {
+  return Question.getQuestionById(id);
 }
 
 let self = module.exports = {
-  getQuestionByTitle: getQuestionByTitle
+  getQuestionByid: getQuestionByid
 }

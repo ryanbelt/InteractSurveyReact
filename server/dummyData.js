@@ -9,7 +9,8 @@ export default function () {
 
     const question1 = new Question(
       {
-        title: 'Pc Buyer',
+        _id: "5bb60ab958a0001c487aea8b",
+        title: 'PcBuyer',
         questions: [
           {
             number: "Q1",

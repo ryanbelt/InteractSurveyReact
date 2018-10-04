@@ -19,8 +19,8 @@ let QuestionSchema = new Schema({
   ]
 }, {timestamps: { createdAt: 'created', updatedAt: 'updated' }});
 
-QuestionSchema.statics.getQuestionByTitle = function(title) {
-  var query = this.findOne({title: title});
+QuestionSchema.statics.getQuestionById = function(id) {
+  var query = this.findOne({_id: id});
   return query.exec();
 };
 

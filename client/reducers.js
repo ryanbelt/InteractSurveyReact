@@ -5,8 +5,10 @@ import { combineReducers } from 'redux';
 
 // Import Reducers
 import app from './modules/App/AppReducer';
+import survey from './modules/Survey/SurveyReducer';
 
 // Combine all reducers into one root reducer
 export default combineReducers({
   app,
+  survey
 });
