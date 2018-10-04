@@ -1,32 +1,20 @@
 import Post from '../models/post';
 import cuid from 'cuid';
-import slug from 'limax';
+import slug from 'slug';
 import sanitizeHtml from 'sanitize-html';
 
-/**
- * Get all posts
- * @param req
- * @param res
- * @returns void
- */
 export function getPosts(req, res) {
   Post.find().sort('-dateAdded').exec((err, posts) => {
     if (err) {
-      res.status(500).send(err);
+      return res.status(500).send(err);
     }
     res.json({ posts });
   });
 }
 
-/**
- * Save a post
- * @param req
- * @param res
- * @returns void
- */
 export function addPost(req, res) {
   if (!req.body.post.name || !req.body.post.title || !req.body.post.content) {
-    res.status(403).end();
+    return res.status(403).end();
   }
 
   const newPost = new Post(req.body.post);
@@ -40,37 +28,28 @@ export function addPost(req, res) {
   newPost.cuid = cuid();
   newPost.save((err, saved) => {
     if (err) {
-      res.status(500).send(err);
+      return res.status(500).send(err);
     }
-    res.json({ post: saved });
+    return res.json({ post: saved });
   });
 }
 
-/**
- * Get a single post
- * @param req
- * @param res
- * @returns void
- */
 export function getPost(req, res) {
-  Post.findOne({ cuid: req.params.cuid }).exec((err, post) => {
+  const newSlug = req.query.slug.split('-');
+  const newCuid = newSlug[newSlug.length - 1];
+  Post.findOne({ cuid: newCuid }).exec((err, post) => {
     if (err) {
-      res.status(500).send(err);
+      return res.status(500).send(err);
     }
     res.json({ post });
   });
 }
 
-/**
- * Delete a post
- * @param req
- * @param res
- * @returns void
- */
 export function deletePost(req, res) {
-  Post.findOne({ cuid: req.params.cuid }).exec((err, post) => {
+  const postId = req.body.postId;
+  Post.findById(postId).exec((err, post) => {
     if (err) {
-      res.status(500).send(err);
+      return res.status(500).send(err);
     }
 
     post.remove(() => {
