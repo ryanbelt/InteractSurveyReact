@@ -6,8 +6,10 @@
   ],
   "verbose": true,
   "watch": [
-    "server"
+    "server",
+    "Intl"
   ],
+  "legacyWatch": true,
   "env": {
     "NODE_ENV": "development"
   },

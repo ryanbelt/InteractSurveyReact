@@ -1,25 +1,41 @@
 import Express from 'express';
+import compression from 'compression';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import path from 'path';
-
-// Webpack Requirements
-import webpack from 'webpack';
-import config from '../webpack.config.dev';
-import webpackDevMiddleware from 'webpack-dev-middleware';
-import webpackHotMiddleware from 'webpack-hot-middleware';
+import IntlWrapper from '../client/modules/Intl/IntlWrapper';
 
 // Initialize the Express App
 const app = new Express();
 
-if (process.env.NODE_ENV !== 'production') {
+// Set Development modes checks
+const isDevMode = process.env.NODE_ENV === 'development' || false;
+const isProdMode = process.env.NODE_ENV === 'production' || false;
+
+// Run Webpack dev server in development mode
+if (isDevMode) {
+  // Webpack Requirements
+  // eslint-disable-next-line global-require
+  const webpack = require('webpack');
+  // eslint-disable-next-line global-require
+  const config = require('../webpack.config.dev');
+  // eslint-disable-next-line global-require
+  const webpackDevMiddleware = require('webpack-dev-middleware');
+  // eslint-disable-next-line global-require
+  const webpackHotMiddleware = require('webpack-hot-middleware');
   const compiler = webpack(config);
-  app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: config.output.publicPath }));
+  app.use(webpackDevMiddleware(compiler, {
+    noInfo: true,
+    publicPath: config.output.publicPath,
+    watchOptions: {
+      poll: 1000,
+    },
+  }));
   app.use(webpackHotMiddleware(compiler));
 }
 
 // React And Redux Setup
-import { configureStore } from '../shared/redux/store/configureStore';
+import { configureStore } from '../client/store';
 import { Provider } from 'react-redux';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
@@ -27,35 +43,44 @@ import { match, RouterContext } from 'react-router';
 import Helmet from 'react-helmet';
 
 // Import required modules
-import routes from '../shared/routes';
+import routes from '../client/routes';
 import { fetchComponentData } from './util/fetchData';
 import posts from './routes/post.routes';
 import Router from './routes';
 import dummyData from './dummyData';
 import serverConfig from './config';
 
-// MongoDB Connection
-mongoose.connect(serverConfig.mongoURL, (error) => {
-  if (error) {
-    console.error('Please make sure Mongodb is installed and running!'); // eslint-disable-line no-console
-    throw error;
-  }
+// Set native promises as mongoose promise
+mongoose.Promise = global.Promise;
 
-  // feed some dummy data in DB.
-  dummyData();
-});
+// MongoDB Connection
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect(serverConfig.mongoURL, (error) => {
+    if (error) {
+      console.error('Please make sure Mongodb is installed and running!'); // eslint-disable-line no-console
+      throw error;
+    }
+
+    // feed some dummy data in DB.
+    dummyData();
+  });
+}
 
 // Apply body Parser and server public assets and routes
+app.use(compression());
 app.use(bodyParser.json({ limit: '20mb' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
-app.use(Express.static(path.resolve(__dirname, '../static')));
+app.use(Express.static(path.resolve(__dirname, '../dist/client')));
 app.use('/api', posts);
 app.use('/api', Router);
 
 // Render Initial HTML
 const renderFullPage = (html, initialState) => {
-  const cssPath = process.env.NODE_ENV === 'production' ? '/css/app.min.css' : '/css/app.css';
   const head = Helmet.rewind();
+
+  // Import Manifests
+  const assetsManifest = process.env.webpackAssets && JSON.parse(process.env.webpackAssets);
+  const chunkManifest = process.env.webpackChunkAssets && JSON.parse(process.env.webpackChunkAssets);
 
   return `
     <!doctype html>
@@ -67,16 +92,21 @@ const renderFullPage = (html, initialState) => {
         ${head.link.toString()}
         ${head.script.toString()}
 
-        <link rel="stylesheet" href=${cssPath} />
+        ${isProdMode ? `<link rel='stylesheet' href='${assetsManifest['/app.css']}' />` : ''}
         <link href='https://fonts.googleapis.com/css?family=Lato:400,300,700' rel='stylesheet' type='text/css'/>
         <link rel="shortcut icon" href="http://res.cloudinary.com/hashnode/image/upload/v1455629445/static_imgs/mern/mern-favicon-circle-fill.png" type="image/png" />
       </head>
       <body>
-        <div id="root">${html}</div>
+        <div id="root">${process.env.NODE_ENV === 'production' ? html : `<div>${html}</div>`}</div>
         <script>
           window.__INITIAL_STATE__ = ${JSON.stringify(initialState)};
+          ${isProdMode ?
+          `//<![CDATA[
+          window.webpackManifest = ${JSON.stringify(chunkManifest)};
+          //]]>` : ''}
         </script>
-        <script src="/dist/bundle.js"></script>
+        <script src='${isProdMode ? assetsManifest['/vendor.js'] : '/vendor.js'}'></script>
+        <script src='${isProdMode ? assetsManifest['/app.js'] : '/app.js'}'></script>
       </body>
     </html>
   `;
@@ -84,7 +114,7 @@ const renderFullPage = (html, initialState) => {
 
 const renderError = err => {
   const softTab = '&#32;&#32;&#32;&#32;';
-  const errTrace = process.env.NODE_ENV !== 'production' ?
+  const errTrace = isProdMode ?
     `:<br><br><pre style="color:red">${softTab}${err.stack.replace(/\n/g, `<br>${softTab}`)}</pre>` : '';
   return renderFullPage(`Server Error${errTrace}`, {});
 };
@@ -104,22 +134,25 @@ app.use((req, res, next) => {
       return next();
     }
 
-    const initialState = { posts: [], post: {} };
-
-    const store = configureStore(initialState);
+    const store = configureStore();
 
     return fetchComponentData(store, renderProps.components, renderProps.params)
       .then(() => {
         const initialView = renderToString(
           <Provider store={store}>
-            <RouterContext {...renderProps} />
+            <IntlWrapper>
+              <RouterContext {...renderProps} />
+            </IntlWrapper>
           </Provider>
         );
         const finalState = store.getState();
 
-        res.status(200).end(renderFullPage(initialView, finalState));
+        res
+          .set('Content-Type', 'text/html')
+          .status(200)
+          .end(renderFullPage(initialView, finalState));
       })
-      .catch((err) => next(err));
+      .catch((error) => next(error));
   });
 });
 
