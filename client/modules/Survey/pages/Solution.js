@@ -6,16 +6,17 @@ import { connect } from 'react-redux';
 
 // import styles from './Barcode.css';
 // import globalStyles from '../../App/App.css';
-import { getResponse } from '../SurveyAction';
+import { getResponse, getMetrics } from '../SurveyAction';
 let _ = require('underscore');
 
 class Solution extends Component {
   constructor(props) {
     super(props);
 
-    this.state={
-      responseObj: null
-    }
+    this.state = {
+      responseObj: null,
+      globalMetric: null,
+    };
   }
 
   componentWillMount(){
@@ -24,25 +25,49 @@ class Solution extends Component {
     this.props.getResponse(uuid)
       .then((res) => {
         self.setState({ responseObj: res });
+        return self.props.getMetrics(res.questionId)
       })
+      .then((res) => {
+        self.setState({ globalMetric: res });
+      });
   }
 
-  displayPersonalSolution(){
-    console.log(this.state.responseObj)
-    if(!this.state.responseObj){
-    return ""
+  displayPersonalSolution() {
+    if (!this.state.responseObj) {
+      return [];
     }
-    let solution = ""
-    for(let result of this.state.responseObj.result){
-        solution+=`--${result.text}: ${result.value/this.state.responseObj.categoryPoint}     `
+    let solution = [];
+    for (let result of this.state.responseObj.result) {
+      let percentage = Math.round(result.value/this.state.responseObj.categoryPoint * 10000)/100
+        solution.push(<div key={result.text}>
+          <div>{result.text}: {percentage}% </div>
+        </div>);
     }
-    return solution
+    return solution;
+  }
+
+  displayGlobalSolution() {
+    if (!this.state.globalMetric) {
+      return [];
+    }
+    let solution = [];
+    for (let result of this.state.globalMetric.result) {
+      let percentage = Math.round(result.value / this.state.globalMetric.categoryPoint * 10000)/100
+      solution.push(<div key={result.text}>
+        <div>{result.text}: {percentage}% </div>
+      </div>);
+    }
+    return solution;
   }
 
   render() {
     return <div>
-      Solution
+      <h3>Solution</h3>
       <div>{this.displayPersonalSolution()}</div>
+      <h3>Global Metric</h3>
+      <div>
+        {this.displayGlobalSolution()}
+      </div>
     </div>
   }
 
@@ -60,6 +85,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     getResponse:(uuid)=>{
       return dispatch(getResponse(uuid))
+    },
+    getMetrics: (questionId)=>{
+      return dispatch(getMetrics(questionId))
     }
   };
 };

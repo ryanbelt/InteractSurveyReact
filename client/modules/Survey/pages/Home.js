@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
 
 // import styles from './Barcode.css';
-// import globalStyles from '../../App/App.css';
+import globalStyles from '../../App/App.css';
 import { setUUID } from '../SurveyAction';
 
 
@@ -30,8 +30,9 @@ class Home extends Component {
 
   render() {
     return <div>
-      <div onClick={this.directToNewSurvey.bind(this)}>New PC BUYER Survey</div>
-      <div onClick={this.directToMetric.bind(this)}>All Solution Metric</div>
+      <div className={globalStyles.btn} role="button" onClick={this.directToNewSurvey.bind(this)}>New PC Buyer Survey</div>
+      <br/>
+      <div className={globalStyles.btn} role="button" onClick={this.directToMetric.bind(this)}>PC Buyer Metric</div>
     </div>
   }
 

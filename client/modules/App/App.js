@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { browserHistory } from 'react-router';
 
 // Import Style
 import styles from './App.css';
@@ -8,7 +9,6 @@ import styles from './App.css';
 import Helmet from 'react-helmet';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
-
 // Import Actions
 
 let DevTools;
@@ -27,15 +27,15 @@ export class App extends Component {
     this.setState({isMounted: true}); // eslint-disable-line
   }
 
-  toggleAddPostSection = () => {
-    this.props.dispatch(toggleAddPost());
-  };
+  goToHome() {
+    browserHistory.push('/');
+  }
 
   render() {
     return (
       <div>
         {this.state.isMounted && !window.devToolsExtension && process.env.NODE_ENV === 'development' && <DevTools />}
-        <div>
+        <div className={`container-fluid ${styles.flexContainer}`}>
           <Helmet
             title="MERN Starter - Blog App"
             titleTemplate="%s - Blog App"
@@ -51,11 +51,11 @@ export class App extends Component {
               },
             ]}
           />
-          <Header />
-          <div className={styles.container}>
+          <Header goToHome={this.goToHome}/>
+          <main className={styles.container}>
             {this.props.children}
-          </div>
-          <Footer />
+          </main>
+          <Footer/>
         </div>
       </div>
     );

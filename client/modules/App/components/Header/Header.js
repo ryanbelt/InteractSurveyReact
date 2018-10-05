@@ -7,9 +7,14 @@ import styles from './Header.css';
 export function Header(props, context) {
 
   return (
-    <div className={styles.header}>
-      header
-    </div>
+    <nav className={"navbar navbar-inverse"}>
+      <div className="container-fluid" style={{paddingLeft: 30, paddingRight: 30}}>
+
+          <ul className="nav navbar-nav navbar-right">
+            <li><a role="button" onClick={props.goToHome}>Home</a></li>
+          </ul>
+      </div>
+    </nav>
   );
 }
 

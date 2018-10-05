@@ -1,0 +1,9 @@
+.option{
+  color:blue;
+  margin-top: 10px;
+  letter-spacing: -0.2px;
+}
+
+.option:hover{
+  color:red;
+}

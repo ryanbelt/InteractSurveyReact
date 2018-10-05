@@ -13,9 +13,9 @@ class Solution extends Component {
   constructor(props) {
     super(props);
 
-    this.state={
+    this.state = {
       responseObj: null
-    }
+    };
   }
 
   componentWillMount(){
@@ -23,19 +23,21 @@ class Solution extends Component {
     this.props.getMetrics(this.props.params.questionId)
       .then((res) => {
         self.setState({ responseObj: res });
-      })
+      });
   }
 
   displayPersonalSolution(){
-    console.log(this.state.responseObj)
-    if(!this.state.responseObj){
-      return ""
+    if (!this.state.responseObj) {
+      return [];
     }
-    let solution = ""
-    for(let result of this.state.responseObj.result){
-      solution+=`--${result.text}: ${result.value/this.state.responseObj.categoryPoint}     `
+    let solution = []
+    for (let result of this.state.responseObj.result) {
+      let percentage = Math.round(result.value/this.state.responseObj.categoryPoint * 10000)/100
+      solution.push(<div key={result.text}>
+        <div>{result.text}: {percentage}%  </div>
+      </div>);
     }
-    return solution
+    return solution;
   }
 
   render() {

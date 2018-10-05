@@ -5,7 +5,7 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { browserHistory } from 'react-router';
 
-// import styles from './Barcode.css';
+import styles from './styles.css';
 // import globalStyles from '../../App/App.css';
 import { fetchQuestion, updateResponse } from '../SurveyAction';
 let _ = require('underscore');
@@ -20,21 +20,23 @@ class SurveyMain extends Component {
   }
 
   componentWillMount(){
-    if(!this.props.uuid){
-      browserHistory.push('/');
+    if (typeof(window) != 'undefined') {
+      if (!this.props.uuid) {
+        browserHistory.push('/');
+      }
+      this.props.fetchQuestion(this.props.params.questionId)
+        .then(() => {
+          this.changeQuestion();
+        });
     }
-    this.props.fetchQuestion(this.props.params.questionId)
-      .then(() => {
-        this.changeQuestion();
-      })
   }
 
-  changeQuestion(questionNumber){
-    if(!this.props.question){
-      this.setState({onQuestion:null});
+  changeQuestion(questionNumber) {
+    if (!this.props.question) {
+      this.setState({ onQuestion:null });
     }
-    if(!questionNumber){
-      questionNumber = "Q1"
+    if (!questionNumber) {
+      questionNumber = "Q1";
     }
     let questionIndex = _.findIndex(this.props.question.questions, {
       number: questionNumber
@@ -44,12 +46,12 @@ class SurveyMain extends Component {
   }
 
   generateOptions(){
-    if(!this.state.onQuestion){
-      return []
-    }else{
-      let questionArray = []
-      for (let index in this.state.onQuestion.answers){
-        questionArray.push(<div key={index} onClick={this.saveSelection.bind(this, this.state.onQuestion.answers[index])}>{this.state.onQuestion.answers[index].text}</div>)
+    if (!this.state.onQuestion) {
+      return [];
+    } else {
+      let questionArray = [];
+      for (let index in this.state.onQuestion.answers) {
+        questionArray.push(<h5 className={styles.option} role="button" key={index} onClick={this.saveSelection.bind(this, this.state.onQuestion.answers[index])}>- {this.state.onQuestion.answers[index].text}</h5>)
       }
       return questionArray;
     }
@@ -57,36 +59,30 @@ class SurveyMain extends Component {
 
   saveSelection(option){
     let self = this;
-    if(!option){
-      //todo, error handle
+    if (!option) {
+      // todo, error handle
     }
-    else if(!option.next){
- //todo direct by uuid
-      browserHistory.push(`/survey/solution/${this.props.uuid}`);
-    }
-    else{
-      return this.props.updateResponse(this.props.uuid,{
-        questionId: this.props.question._id,
-        question: this.state.onQuestion.text,
-        answer: option
-      })
-        .then(function(){
+    return this.props.updateResponse(this.props.uuid,{
+      questionId: this.props.question._id,
+      question: this.state.onQuestion.text,
+      answer: option
+    })
+      .then(() => {
+        if (!option.next) {
+          browserHistory.push(`/survey/solution/${self.props.uuid}`);
+        } else {
           self.changeQuestion(option.next);
-        })
-
-    }
+        }
+      });
   }
 
 
   render() {
-    return <div>
-      <div>{this.state.onQuestion? this.state.onQuestion.text :null}</div>
+    return <div className={"container"}>
+      <h3>{this.state.onQuestion ? this.state.onQuestion.text : ""}</h3>
       {this.generateOptions()}
     </div>
   }
-
-
-
 }
 
 

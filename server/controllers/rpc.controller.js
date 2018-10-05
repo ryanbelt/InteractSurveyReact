@@ -6,7 +6,7 @@ let _ = require('underscore');
 let ResponseController = require('./response.controller');
 
 function getScoreOfSurveyById(questionId) {
-  return ResponseController.getAllResponse({questionId: questionId}, {result:1, categoryPoint:1})
+  return ResponseController.getAllResponse({questionId: questionId, finished: true}, {result:1, categoryPoint:1})
     .then((responses) => {
       let scores = []
       let totalCategoryPoint = 0;
@@ -24,7 +24,7 @@ function getScoreOfSurveyById(questionId) {
             scores[index].value += category.value;
           }
         }
-        totalCategoryPoint += response.categoryPoint
+        totalCategoryPoint += response.categoryPoint;
       }
 
       return {

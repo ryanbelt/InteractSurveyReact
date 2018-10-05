@@ -41,6 +41,7 @@ function updateResponse(uuid, body){
               question: body.question,
               answer: body.answer
             });
+
             updateResponseObj.categoryPoint += body.answer.categoryPoint;
             for(let category of body.answer.categories){
               let index = _.findIndex(updateResponseObj.result, {
@@ -51,6 +52,10 @@ function updateResponse(uuid, body){
               }else{
                 updateResponseObj.result[index].value += category.value;
               }
+            }
+
+            if(!body.answer.next ){
+              updateResponseObj.finished = true;
             }
 
             return Response.save(updateResponseObj);

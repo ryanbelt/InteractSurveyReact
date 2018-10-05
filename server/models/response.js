@@ -27,6 +27,10 @@ let ResponseSchema = new Schema({
       }
     }
   ],
+  finished:{
+    type: Boolean,
+    default:false
+  },
   categoryPoint:{
     type: Number,
     default: 0
