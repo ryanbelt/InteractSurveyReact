@@ -7,7 +7,7 @@ import { browserHistory } from 'react-router';
 
 // import styles from './Barcode.css';
 // import globalStyles from '../../App/App.css';
-import { fetchQuestion } from '../SurveyAction';
+import { fetchQuestion, updateResponse } from '../SurveyAction';
 let _ = require('underscore');
 
 class SurveyMain extends Component {
@@ -20,7 +20,10 @@ class SurveyMain extends Component {
   }
 
   componentWillMount(){
-    this.props.fetchQuestion('5bb60ab958a0001c487aea8b')
+    if(!this.props.uuid){
+      browserHistory.push('/');
+    }
+    this.props.fetchQuestion(this.props.params.questionId)
       .then(() => {
         this.changeQuestion();
       })
@@ -40,26 +43,45 @@ class SurveyMain extends Component {
     this.setState({onQuestion: this.props.question.questions[questionIndex]});
   }
 
-  generateOption(){
+  generateOptions(){
     if(!this.state.onQuestion){
       return []
     }else{
-      console.log('in')
       let questionArray = []
       for (let index in this.state.onQuestion.answers){
-        console.log(this.state.onQuestion.answers)
-        questionArray.push(<div key={index}>{this.state.onQuestion.answers[index].text}</div>)
+        questionArray.push(<div key={index} onClick={this.saveSelection.bind(this, this.state.onQuestion.answers[index])}>{this.state.onQuestion.answers[index].text}</div>)
       }
       return questionArray;
     }
   }
 
+  saveSelection(option){
+    let self = this;
+    if(!option){
+      //todo, error handle
+    }
+    else if(!option.next){
+ //todo direct by uuid
+      browserHistory.push(`/survey/solution/${this.props.uuid}`);
+    }
+    else{
+      return this.props.updateResponse(this.props.uuid,{
+        questionId: this.props.question._id,
+        question: this.state.onQuestion.text,
+        answer: option
+      })
+        .then(function(){
+          self.changeQuestion(option.next);
+        })
+
+    }
+  }
+
 
   render() {
-    let options = this.generateOption();
     return <div>
       <div>{this.state.onQuestion? this.state.onQuestion.text :null}</div>
-      {options}
+      {this.generateOptions()}
     </div>
   }
 
@@ -70,7 +92,8 @@ class SurveyMain extends Component {
 
 const mapStateToProps = (state) => {
   return {
-    question: state.survey.question
+    question: state.survey.question,
+    uuid: state.survey.uuid,
   };
 };
 
@@ -78,6 +101,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     fetchQuestion: (id) => {
       return dispatch(fetchQuestion(id));
+    },
+    updateResponse: (uuid, body) => {
+      return dispatch(updateResponse(uuid, body));
     }
   };
 };

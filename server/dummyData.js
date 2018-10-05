@@ -477,7 +477,7 @@ export default function () {
             answers: [
               {
                 text: "When a new version come out",
-                next: "Q10",
+                next: null,
                 categoryPoint: 1,
                 categories: [{
                   text: "Trend",
@@ -486,7 +486,7 @@ export default function () {
               },
               {
                 text: "Device Not working any more",
-                next: "Q10",
+                next: null,
                 categoryPoint: 1,
                 categories: [
                   {
@@ -496,7 +496,7 @@ export default function () {
               },
               {
                 text: "When there is cheap used phone I want",
-                next: "Q10",
+                next: null,
                 categoryPoint: 1,
                 categories: [{
                   text: "Trend",

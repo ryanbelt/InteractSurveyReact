@@ -27,6 +27,40 @@ export function fetchQuestion(id){
       return true;
     })
       .catch(err => {
+        dispatch(setQuestion(null));
+        console.error(err);
+      })
+  }
+}
+
+export function updateResponse(uuid, body){
+  return (dispatch) => {
+    return callApi(`responses/${uuid}`, 'PUT', body).then(res => {
+      return true;
+    })
+      .catch(err => {
+        console.error(err);
+      })
+  }
+}
+
+export function getResponse(uuid){
+  return (dispatch) => {
+    return callApi(`responses/${uuid}`).then(res => {
+      return res;
+    })
+      .catch(err => {
+        console.error(err);
+      })
+  }
+}
+
+export function getMetrics(questionId){
+  return (dispatch) => {
+    return callApi(`responses/score/survey/${questionId}`).then(res => {
+      return res;
+    })
+      .catch(err => {
         console.error(err);
       })
   }
