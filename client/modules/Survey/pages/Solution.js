@@ -3,9 +3,7 @@
  */
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-
-// import styles from './Barcode.css';
-// import globalStyles from '../../App/App.css';
+import BarGraph from '../components/BarGraph';
 import { getResponse, getMetrics } from '../SurveyAction';
 let _ = require('underscore');
 
@@ -36,38 +34,23 @@ class Solution extends Component {
     if (!this.state.responseObj) {
       return [];
     }
-    let solution = [];
-    for (let result of this.state.responseObj.result) {
-      let percentage = Math.round(result.value/this.state.responseObj.categoryPoint * 10000)/100
-        solution.push(<div key={result.text}>
-          <div>{result.text}: {percentage}% </div>
-        </div>);
-    }
-    return solution;
+    return <BarGraph responseObj={this.state.responseObj} />;
   }
 
   displayGlobalSolution() {
     if (!this.state.globalMetric) {
-      return [];
+      return "";
     }
-    let solution = [];
-    for (let result of this.state.globalMetric.result) {
-      let percentage = Math.round(result.value / this.state.globalMetric.categoryPoint * 10000)/100
-      solution.push(<div key={result.text}>
-        <div>{result.text}: {percentage}% </div>
-      </div>);
-    }
-    return solution;
+
+    return <BarGraph responseObj={this.state.globalMetric} />;
   }
 
   render() {
-    return <div>
-      <h3>Solution</h3>
+    return <div className="container">
+      <h3 style={{textAlign: "center"}}>Personal Solution</h3>
       <div>{this.displayPersonalSolution()}</div>
-      <h3>Global Metric</h3>
-      <div>
-        {this.displayGlobalSolution()}
-      </div>
+      <h3 style={{textAlign: "center"}}>Global Metric</h3>
+      <div>{this.displayGlobalSolution()}</div>
     </div>
   }
 

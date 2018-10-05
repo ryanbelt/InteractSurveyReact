@@ -29,10 +29,10 @@ class Home extends Component {
   }
 
   render() {
-    return <div>
+    return <div className="container">
       <div className={globalStyles.btn} role="button" onClick={this.directToNewSurvey.bind(this)}>New PC Buyer Survey</div>
       <br/>
-      <div className={globalStyles.btn} role="button" onClick={this.directToMetric.bind(this)}>PC Buyer Metric</div>
+      <div className={globalStyles.btn} style={{marginTop: 30}} role="button" onClick={this.directToMetric.bind(this)}>PC Buyer Metric</div>
     </div>
   }
 
